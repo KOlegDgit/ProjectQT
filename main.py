@@ -1,36 +1,59 @@
-import re
-import numpy as np
-import pytesseract
-import cv2
-
-faceCascade = cv2.CascadeClassifier(r'haarcascade_russian_plate_number.xml')
-pytesseract.pytesseract.tesseract_cmd = 'Tesseract-OCR\\tesseract.exe'
-frame = cv2.imread('7198889.jpg')
-
-
-def Scalling(frame):
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # convert to grey scale
-    gray = np.array(gray, dtype='uint8')
-    gray = cv2.bilateralFilter(gray, 11, 17, 17)  # Blur to reduce noise
-    gray = cv2.GaussianBlur(gray, (3, 3), 0)
-    return gray
+import sys
+from PyQt5.Qt import QPalette, QColor, Qt
+from PyQt5.QtGui import QIcon
+from PyQt5 import uic, QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
+from PyQt5.QtGui import QPixmap
+from detect import Detect
 
 
-plaques = faceCascade.detectMultiScale(Scalling(frame), 1.4, 4)
+class MyWidget(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('MainForm.ui', self)  # Загружаем дизайн
+        self.radioButton_img.setChecked(True)
+        self.setWindowIcon(QIcon('data\ok.png'))
+        self.pushButton_img.clicked.connect(self.run)
 
-for i, (x, y, w, h) in enumerate(plaques):
-    roi_color = frame[y:y + h, x:x + w]
-    r = 400.0 / roi_color.shape[1]
-    dim = (400, int(roi_color.shape[0] * r))  # для изменения изображения
-    resized = cv2.resize(roi_color, dim, interpolation=cv2.INTER_AREA)
-    cv2.imwrite("frame.jpg", resized)
-    image = cv2.imread("frame.jpg")
-    text = pytesseract.image_to_string(resized, lang="eng", config='--psm 9')
-    text1 = "".join(
-        [c for c in text if c.isupper() or c.isdigit() or c.islower()]).upper()  # регулярка для выделения букв и цифр
+    def run(self):
+        fname = QFileDialog.getOpenFileName(self, 'Выбрать картинку', '')[0]
+        self.img_label.setPixmap(QPixmap(fname))
+        detect_img = Detect(fname)
+        detect_img.get_image()
+        self.label_number.setPixmap(QPixmap('frame.jpg'))
 
-    pattern = re.findall(r"[A-Z]{1}\d{3}[A-Z]{2}\d{2,3}", text1)
 
-    if pattern:
-        print(*pattern)  # вывод номера тс
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    # тёмная тема
+    app.setStyle("Fusion")
+    palette = QPalette()
+    palette.setColor(QPalette.Window, QColor(53, 53, 53))
+    palette.setColor(QPalette.WindowText, Qt.white)
+    palette.setColor(QPalette.Base, QColor(25, 25, 25))
+    palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+    palette.setColor(QPalette.ToolTipBase, Qt.white)
+    palette.setColor(QPalette.ToolTipText, Qt.white)
+    palette.setColor(QPalette.Text, Qt.white)
+    palette.setColor(QPalette.Button, QColor(53, 53, 53))
+    palette.setColor(QPalette.ButtonText, Qt.white)
+    palette.setColor(QPalette.BrightText, Qt.red)
+    palette.setColor(QPalette.Link, QColor(42, 130, 218))
+    palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+    palette.setColor(QPalette.HighlightedText, Qt.black)
+    app.setPalette(palette)
+
+    ex = MyWidget()
+    ex.show()
+    sys.exit(app.exec_())
+
+
+
+
+
+
+
+
+
 
