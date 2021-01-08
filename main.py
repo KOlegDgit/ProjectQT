@@ -5,22 +5,79 @@ from PyQt5 import uic, QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 from PyQt5.QtGui import QPixmap
 from detect import Detect
+from veb_capture import Detect_cam
 
 
-class MyWidget(QMainWindow):
+class Login(QMainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi('MainForm.ui', self)  # Загружаем дизайн
-        self.radioButton_img.setChecked(True)
-        self.setWindowIcon(QIcon('data\ok.png'))
-        self.pushButton_img.clicked.connect(self.run)
+        uic.loadUi('data/Ui/login.ui', self)  # Загружаем дизайн
+        self.setWindowIcon(QIcon('data/img/ok.png'))
+        self.pushButton_in.clicked.connect(self.enter)
+        self.pushButton_reg.clicked.connect(self.registration)
 
-    def run(self):
-        fname = QFileDialog.getOpenFileName(self, 'Выбрать картинку', '')[0]
-        self.img_label.setPixmap(QPixmap(fname))
-        detect_img = Detect(fname)
-        detect_img.get_image()
-        self.label_number.setPixmap(QPixmap('frame.jpg'))
+    def enter(self):
+        new_pass = self.textEdit_fio.toPlainText()
+
+        # hashed_password = hash_password(new_pass)
+        # print('Строка для хранения в базе данных: ' + hashed_password)
+        # old_pass = input('Введите пароль еще раз для проверки: ')
+        #
+        # if check_password(hashed_password, old_pass):
+        #     print('Вы ввели правильный пароль')
+        # else:
+        #     print('Извините, но пароли не совпадают')
+        if new_pass == '1':
+            self.main_form = MainForm()
+            self.main_form.show()
+            self.close()
+
+    def registration(self):
+        self.registration = Registration()
+        self.registration.show()
+        self.close()
+
+
+class Registration(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('data/Ui/Registration.ui', self)  # Загружаем дизайн
+        self.setWindowIcon(QIcon('data/img/ok.png'))
+        self.pushButton_regetr.clicked.connect(self.registration)
+
+    def registration(self):
+        self.login = Login()
+        self.login.show()
+        self.close()
+
+
+class MainForm(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('data/Ui/MainForm.ui', self)  # Загружаем дизайн
+        self.setWindowIcon(QIcon('data/img/ok.png'))
+        self.pushButton_img.clicked.connect(self.download_img)
+        self.pushButton_cam.clicked.connect(self.download_cam)
+        self.pushButton_detect_img.clicked.connect(self.detect_img)
+
+        self.label.setPixmap(QPixmap('data/img/Car1.jpg'))
+        self.label_2.setPixmap(QPixmap('data/img/Car2.png'))
+        self.label_3.setPixmap(QPixmap('data/img/Car3.jpg'))
+        self.label_4.setPixmap(QPixmap('data/img/Car4.jpg'))
+
+    def download_img(self):
+        self.fname = QFileDialog.getOpenFileName(self, 'Выбрать картинку', '')[0]
+        self.img_label.setPixmap(QPixmap(self.fname))
+
+    def detect_img(self):
+        detect_img = Detect(self.fname)
+        detect_img.get_image(self.label_number_img)
+
+    def download_cam(self):
+        detect_cam = Detect_cam()
+        detect_cam.detect(self.cam_label)
+
+
 
 
 
@@ -44,16 +101,7 @@ if __name__ == '__main__':
     palette.setColor(QPalette.HighlightedText, Qt.black)
     app.setPalette(palette)
 
-    ex = MyWidget()
-    ex.show()
+    login = Login()
+    login.show()
+
     sys.exit(app.exec_())
-
-
-
-
-
-
-
-
-
-

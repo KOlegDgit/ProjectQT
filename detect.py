@@ -3,9 +3,10 @@ import os
 import numpy as np
 import pytesseract
 import cv2
+from PyQt5.QtGui import QPixmap
 
-faceCascade = cv2.CascadeClassifier(r'haarcascade_russian_plate_number.xml')
-pytesseract.pytesseract.tesseract_cmd = 'Tesseract-OCR\\tesseract.exe'
+faceCascade = cv2.CascadeClassifier(r'data\\haarcascade_russian_plate_number.xml')
+pytesseract.pytesseract.tesseract_cmd = 'data\\Tesseract-OCR\\tesseract.exe'
 
 
 
@@ -22,15 +23,15 @@ class Detect:
         gray = cv2.GaussianBlur(gray, (3, 3), 0)
         return gray
 
-    def get_image(self):
+    def get_image(self, label_number_img):
         plaques = faceCascade.detectMultiScale(self.Scalling(), 1.4, 4)
         for i, (x, y, w, h) in enumerate(plaques):
             roi_color = self.frame[y:y + h, x:x + w]
             r = 400.0 / roi_color.shape[1]
             dim = (400, int(roi_color.shape[0] * r))  # для изменения изображения
             resized = cv2.resize(roi_color, dim, interpolation=cv2.INTER_AREA)
-            cv2.imwrite("frame.jpg", resized)
-
+            cv2.imwrite("data/img/frame_img.jpg", resized)
+        label_number_img.setPixmap(QPixmap('data/img/frame_img.jpg'))
 
             # text = pytesseract.image_to_string(resized, lang="eng", config='--psm 9')
             # text1 = "".join(
