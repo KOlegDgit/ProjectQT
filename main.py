@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 from PyQt5.QtGui import QPixmap
 from detect import Detect
 from veb_capture import Detect_cam
+from sqLite import SqLite
 
 
 class Login(QMainWindow):
@@ -46,9 +47,11 @@ class Registration(QMainWindow):
         self.pushButton_regetr.clicked.connect(self.registration)
 
     def registration(self):
-        self.login = Login()
-        self.login.show()
-        self.close()
+        db = SqLite()
+        if db.add_elem(self, self.textEdit_fio.toPlainText(), self.textEdit_password.toPlainText()):
+            self.login = Login()
+            self.login.show()
+            self.close()
 
 
 class MainForm(QMainWindow):
